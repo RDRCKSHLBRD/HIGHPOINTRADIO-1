@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 166.25 166.25">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke: #0aaac3;
+        stroke-miterlimit: 10;
+        stroke-width: 2px;
+      }
+
+      .cls-2, .cls-3 {
+        fill: #0aaac3;
+      }
+    </style>
+  </defs>
+  <g id="_x32_">
+    <rect class="cls-1" width="166.25" height="166.25"/>
+    <line class="cls-2" x1="118.16" y1="61.83" x2="47.45" y2="61.83"/>
+    <polygon class="cls-3" points="47.17 61.8 77.33 79.22 77.33 44.39 47.17 61.8"/>
+    <line class="cls-2" x1="118.16" y1="102.3" x2="47.45" y2="102.3"/>
+    <polygon class="cls-3" points="47.17 102.27 77.33 119.69 77.33 84.86 47.17 102.27"/>
+  </g>
+</svg>

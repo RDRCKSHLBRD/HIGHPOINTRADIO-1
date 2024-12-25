@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 166.25 166.25">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        font-family: HelveticaNeue-Light, 'Helvetica Neue';
+        font-size: 47.09px;
+        font-weight: 300;
+      }
+
+      .cls-3, .cls-4 {
+        fill: #0aaac3;
+      }
+
+      .cls-2 {
+        stroke: #0aaac3;
+        stroke-miterlimit: 10;
+        stroke-width: 5px;
+      }
+    </style>
+  </defs>
+  <g id="_x32_">
+    <rect class="cls-1" width="166.25" height="166.25"/>
+    <line class="cls-2" x1="12.64" y1="83.85" x2="142.76" y2="83.85"/>
+    <polygon class="cls-4" points="146.29 83.9 90.78 51.85 90.78 115.95 146.29 83.9"/>
+    <text class="cls-3" transform="translate(13.98 142.76)"><tspan x="0" y="0">30</tspan></text>
+  </g>
+</svg>

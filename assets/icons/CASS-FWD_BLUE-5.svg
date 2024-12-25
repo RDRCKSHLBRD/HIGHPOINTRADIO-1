@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 166.25 166.25">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-2, .cls-3 {
+        fill: #0aaac3;
+      }
+
+      .cls-3 {
+        stroke: #0aaac3;
+        stroke-miterlimit: 10;
+        stroke-width: 5px;
+      }
+    </style>
+  </defs>
+  <g id="_x32_">
+    <g>
+      <rect class="cls-1" x="0" y="0" width="166.25" height="166.25"/>
+      <line class="cls-3" x1="48.09" y1="61.83" x2="118.8" y2="61.83"/>
+      <polygon class="cls-2" points="123.08 61.8 92.92 79.22 92.92 44.39 123.08 61.8"/>
+      <line class="cls-3" x1="48.09" y1="102.3" x2="118.8" y2="102.3"/>
+      <polygon class="cls-2" points="122.08 102.27 91.92 119.69 91.92 84.86 122.08 102.27"/>
+    </g>
+  </g>
+</svg>
