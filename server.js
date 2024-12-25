@@ -7,7 +7,11 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Middleware: General CORS setup
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range']
+}));
 
 // Middleware: Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -16,7 +20,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 const dynamicRateLimit = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: (req) => {
-        // Higher limits for trusted users (e.g., clients with a specific header)
         return req.headers['x-trusted-client'] ? 1000 : 100;
     },
     handler: (req, res) => {
@@ -45,7 +48,8 @@ app.get('/metadata', async (req, res) => {
     try {
         const headResponse = await axios({
             method: 'head',
-            url: fileUrl
+            url: fileUrl,
+            timeout: 120 * 1000 // 120 seconds
         });
 
         const contentLength = headResponse.headers['content-length'];
@@ -83,6 +87,7 @@ app.get('/proxy', async (req, res) => {
             url: fileUrl,
             responseType: 'stream',
             headers: headers,
+            timeout: 120 * 1000 // 120 seconds
         });
 
         if (req.headers.range) {
@@ -106,7 +111,10 @@ app.get('/proxy', async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+const PORT = process.env.PORT || 10000;
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
 });
+
+server.keepAliveTimeout = 120 * 1000; // 120 seconds
+server.headersTimeout = 120 * 1000; // 120 seconds
