@@ -112,12 +112,13 @@ class MP3Player {
         console.log("Audio initialized");
     }
 
-    loadTrack(index) {
+    oadTrack(index) {
         if (index >= 0 && index < this.playlist.length) {
             this.initializeAudio();
             const track = this.playlist[index];
             if (track.url) {
-                this.audioElement.src = track.url;
+                const proxyUrl = `/proxy?url=${encodeURIComponent(track.url)}`;
+                this.audioElement.src = proxyUrl;
                 this.fileLabel.textContent = `File: ${track.name}`;
                 this.currentTrackIndex = index;
                 this.audioElement.load();
@@ -129,6 +130,7 @@ class MP3Player {
             console.log("Invalid track index:", index);
         }
     }
+    
 
     playTrack() {
         if (!this.audioElement) {

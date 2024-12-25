@@ -1,0 +1,57 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build artifacts
+dist/
+build/
+
+# Dependency directories
+bower_components/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous
+*.tgz
+*.lock-wscript
+package-lock.json
+
+# Debugging files
+.nyc_output/
+coverage/
+
+# Production environment files
+config/
+*.bak
+*.old
+
+# Git-related files
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+
+# Output files
+public/assets/*.map
