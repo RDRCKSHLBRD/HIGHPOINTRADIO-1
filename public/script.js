@@ -1,5 +1,6 @@
 class MP3Player {
     constructor() {
+        // Initialize DOM element references
         this.playButton = document.getElementById("playButton");
         this.stopButton = document.getElementById("stopButton");
         this.pauseButton = document.getElementById("pauseButton");
@@ -18,21 +19,28 @@ class MP3Player {
         this.volAmtElement = document.querySelector(".VolAmt");
         this.libraryContainer = document.querySelector(".container1");
 
+        // Initialize audio-related properties
         this.audioContext = null;
         this.audioElement = null;
-        this.sourceNode = null;
-        this.gainNode = null;
         this.isPlaying = false;
         this.isPaused = false;
         this.isRepeating = false;
+        this.isTransitioning = false;
         this.currentTrackIndex = 0;
         this.playlist = [];
+        this.playPromise = null;
 
+        // Add throttling for time updates
+        this.lastUpdateTime = 0;
+        this.updateInterval = 250; // Update every 250ms
+
+        // Set up loading indicator
         this.loadingIndicator = document.createElement("div");
         this.loadingIndicator.textContent = "Loading library...";
         this.loadingIndicator.style.color = "#333";
         this.libraryContainer.appendChild(this.loadingIndicator);
 
+        // Initialize event listeners and load library
         this.initEventListeners();
         this.loadLibraryFiles().then(() => {
             this.libraryContainer.removeChild(this.loadingIndicator);
@@ -59,173 +67,190 @@ class MP3Player {
         try {
             const response = await fetch("library.json");
             if (!response.ok) throw new Error("Failed to load library.json");
-    
+
             const files = await response.json();
             this.playlist = files.map((url) => {
-                const name = url.split("/").pop().split(".")[0]; // Extract name from URL
-                return { name: decodeURIComponent(name), url }; // Decode and assign
+                const name = url.split("/").pop().split(".")[0];
+                return { name: decodeURIComponent(name), url };
             });
-    
+
             console.log("Playlist loaded:", this.playlist);
         } catch (error) {
             console.error("Error loading library:", error);
             this.loadingIndicator.textContent = "Error loading library. Please try again.";
         }
     }
-    
 
     initializeAudio() {
-        if (this.audioContext) return;
-    
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.audioElement = new Audio();
-        this.sourceNode = this.audioContext.createMediaElementSource(this.audioElement);
-        this.gainNode = this.audioContext.createGain();
-    
-        this.sourceNode.connect(this.gainNode);
-        this.gainNode.connect(this.audioContext.destination);
-    
-        // Event: Metadata loaded
-        this.audioElement.addEventListener("loadedmetadata", () => {
-            const duration = this.audioElement.duration;
-            if (duration && !isNaN(duration)) {
-                this.totalTimeElement.textContent = this.formatTime(duration);
-                this.seekBar.max = Math.floor(duration);
-            } else {
-                this.totalTimeElement.textContent = "00:00";
-                this.seekBar.max = 100;
-                console.warn("Invalid duration in metadata");
-            }
-        });
-    
-        // Event: Time updates during playback
-        this.audioElement.addEventListener("timeupdate", () => {
-            const currentTime = this.audioElement.currentTime;
-            if (currentTime && !isNaN(currentTime)) {
-                this.elapsedTimeElement.textContent = this.formatTime(currentTime);
-                this.seekBar.value = Math.floor(currentTime);
-            } else {
-                this.elapsedTimeElement.textContent = "00:00";
-                this.seekBar.value = 0;
-            }
-        });
-    
-        // Event: Track ends
-        this.audioElement.addEventListener("ended", () => {
-            if (!this.isRepeating) {
-                this.nextTrack();
-            }
-        });
-    
-        console.log("Audio initialized");
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
     }
-    
-    
-    
 
-    loadTrack(index) {
+    async loadTrack(index) {
         if (index >= 0 && index < this.playlist.length) {
-            this.initializeAudio();
             const track = this.playlist[index];
             if (track.url) {
                 // Reset displays
                 this.totalTimeElement.textContent = "00:00";
                 this.elapsedTimeElement.textContent = "00:00";
                 this.seekBar.value = 0;
-                
-                const proxyUrl = `/proxy?url=${encodeURIComponent(track.url)}`;
-                
-                // Create a new Audio element for each track
-                if (this.audioElement) {
-                    this.audioElement.pause();
-                    this.audioElement.removeAttribute('src');
-                    this.audioElement.load();
+
+                try {
+                    // Fetch metadata first
+                    const metadataResponse = await fetch(`/metadata?url=${encodeURIComponent(track.url)}`);
+                    const metadata = await metadataResponse.json();
+
+                    if (metadata.duration) {
+                        const duration = Math.floor(metadata.duration);
+                        this.totalTimeElement.textContent = this.formatTime(duration);
+                        this.seekBar.max = duration;
+                    }
+                } catch (error) {
+                    console.error("Error fetching metadata:", error);
                 }
-                
-                this.audioElement = new Audio();
-                this.sourceNode = this.audioContext.createMediaElementSource(this.audioElement);
-                this.sourceNode.connect(this.gainNode);
-                
-                this.audioElement.src = proxyUrl;
-                this.fileLabel.textContent = `File: ${track.name}`;
-                this.currentTrackIndex = index;
 
-                // Set up metadata loaded handler
-                this.audioElement.addEventListener('loadedmetadata', () => {
-                    try {
-                        if (this.audioElement.duration && !isNaN(this.audioElement.duration)) {
-                            const duration = Math.floor(this.audioElement.duration);
-                            this.totalTimeElement.textContent = this.formatTime(duration);
-                            this.seekBar.max = duration;
-                            console.log("Duration loaded:", duration);
-                        }
-                    } catch (error) {
-                        console.error("Error setting duration:", error);
-                        this.totalTimeElement.textContent = "00:00";
+                // Initialize audio context if needed
+                this.initializeAudio();
+
+                const proxyUrl = `/proxy?url=${encodeURIComponent(track.url)}`;
+
+                // Clean up old audio element and promise
+                if (this.audioElement) {
+                    if (this.playPromise) {
+                        await this.playPromise;
+                    }
+                    this.audioElement.pause();
+                    this.audioElement.src = "";
+                }
+
+                // Create new audio element
+                this.audioElement = new Audio(proxyUrl);
+
+                this.audioElement.addEventListener("loadedmetadata", () => {
+                    if (this.audioElement.duration) {
+                        this.totalTimeElement.textContent = this.formatTime(this.audioElement.duration);
+                        this.seekBar.max = Math.floor(this.audioElement.duration);
                     }
                 });
 
-                // Set up time update handler
-                this.audioElement.addEventListener('timeupdate', () => {
-                    try {
-                        const currentTime = this.audioElement.currentTime;
-                        if (!isNaN(currentTime)) {
-                            this.elapsedTimeElement.textContent = this.formatTime(currentTime);
-                            this.seekBar.value = Math.floor(currentTime);
+                this.audioElement.addEventListener("timeupdate", () => {
+                    const now = Date.now();
+                    if (now - this.lastUpdateTime >= this.updateInterval) {
+                        this.lastUpdateTime = now;
+                        if (!isNaN(this.audioElement.currentTime)) {
+                            this.elapsedTimeElement.textContent = this.formatTime(this.audioElement.currentTime);
+                            this.seekBar.value = Math.floor(this.audioElement.currentTime);
                         }
-                    } catch (error) {
-                        console.error("Error updating time:", error);
                     }
                 });
+
+                this.audioElement.addEventListener("progress", () => {
+                    const buffered = this.audioElement.buffered;
+                    if (buffered.length > 0) {
+                        const loaded = buffered.end(buffered.length - 1) / this.audioElement.duration;
+                        this.seekBar.style.setProperty("--buffered", `${Math.floor(loaded * 100)}%`);
+                    }
+                });
+
+                this.audioElement.addEventListener("ended", () => {
+                    if (this.isRepeating) {
+                        this.playTrack();
+                    } else {
+                        this.nextTrack();
+                    }
+                });
+
+                // Set initial volume
+                if (this.volumeControl.value) {
+                    this.audioElement.volume = this.volumeControl.value;
+                }
 
                 this.audioElement.load();
+                this.fileLabel.textContent = `File: ${track.name}`;
+                this.currentTrackIndex = index;
                 console.log("Track loaded:", track.name);
-            } else {
-                console.log("Track not loaded:", track.name);
             }
-        } else {
-            console.log("Invalid track index:", index);
         }
     }
-    
-    
 
-    playTrack() {
-        if (!this.audioElement) {
-            this.loadTrack(this.currentTrackIndex);
-        }
-        if (this.audioContext.state === "suspended") {
-            this.audioContext.resume();
-        }
-        this.audioElement.play();
-        this.isPlaying = true;
-        this.isPaused = false;
-        console.log("Playing track");
-    }
+    async playTrack() {
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
 
-    stopTrack() {
-        if (this.audioElement) {
-            this.audioElement.pause();
-            this.audioElement.currentTime = 0;
-            this.isPlaying = false;
+        try {
+            if (!this.audioContext) this.initializeAudio();
+
+            if (this.audioContext.state === "suspended") {
+                await this.audioContext.resume();
+            }
+
+            if (!this.audioElement) {
+                await this.loadTrack(this.currentTrackIndex);
+            }
+
+            // Wait for any pending play operation to complete
+            if (this.playPromise) {
+                await this.playPromise;
+            }
+
+            // Start new play operation
+            this.playPromise = this.audioElement.play();
+            await this.playPromise;
+
+            this.isPlaying = true;
             this.isPaused = false;
+            console.log("Playing track");
+        } catch (error) {
+            console.error("Error playing track:", error);
+            // Reset state on error
+            this.isPlaying = false;
+            this.isPaused = true;
+        } finally {
+            this.isTransitioning = false;
+            this.playPromise = null;
         }
-        console.log("Stopping track");
     }
 
-    pauseTrack() {
-        if (this.audioElement) {
-            if (this.isPlaying) {
+    async pauseTrack() {
+        if (this.isTransitioning) return;
+
+        try {
+            // Wait for any pending play operation to complete
+            if (this.playPromise) {
+                await this.playPromise;
+            }
+
+            if (this.audioElement && this.isPlaying) {
                 this.audioElement.pause();
                 this.isPlaying = false;
                 this.isPaused = true;
-            } else if (this.isPaused) {
-                this.audioElement.play();
-                this.isPlaying = true;
+                console.log("Paused track");
+            } else if (this.audioElement && this.isPaused) {
+                await this.playTrack();
+            }
+        } catch (error) {
+            console.error("Error during pause:", error);
+        }
+    }
+
+    async stopTrack() {
+        try {
+            // Wait for any pending play operation to complete
+            if (this.playPromise) {
+                await this.playPromise;
+            }
+
+            if (this.audioElement) {
+                this.audioElement.pause();
+                this.audioElement.currentTime = 0;
+                this.isPlaying = false;
                 this.isPaused = false;
             }
+            console.log("Stopping track");
+        } catch (error) {
+            console.error("Error during stop:", error);
         }
-        console.log(this.isPaused ? "Paused track" : "Resumed track");
     }
 
     skip(seconds) {
@@ -243,23 +268,23 @@ class MP3Player {
         console.log(`Repeat ${this.isRepeating ? "enabled" : "disabled"}`);
     }
 
-    nextTrack() {
+    async nextTrack() {
         this.currentTrackIndex = (this.currentTrackIndex + 1) % this.playlist.length;
-        this.loadTrack(this.currentTrackIndex);
-        if (this.isPlaying) this.playTrack();
+        await this.loadTrack(this.currentTrackIndex);
+        if (this.isPlaying) await this.playTrack();
         console.log("Next track");
     }
 
-    previousTrack() {
+    async previousTrack() {
         this.currentTrackIndex = (this.currentTrackIndex - 1 + this.playlist.length) % this.playlist.length;
-        this.loadTrack(this.currentTrackIndex);
-        if (this.isPlaying) this.playTrack();
+        await this.loadTrack(this.currentTrackIndex);
+        if (this.isPlaying) await this.playTrack();
         console.log("Previous track");
     }
 
     changeVolume(value) {
-        if (this.gainNode) {
-            this.gainNode.gain.value = value;
+        if (this.audioElement) {
+            this.audioElement.volume = value;
             this.volAmtElement.textContent = `${Math.round(value * 100)}%`;
         }
         console.log("Volume changed:", value);
@@ -272,8 +297,8 @@ class MP3Player {
         console.log("Seek to:", value);
     }
 
-    ejectTrack() {
-        this.stopTrack();
+    async ejectTrack() {
+        await this.stopTrack();
         this.fileLabel.textContent = "Click to select a file";
         this.elapsedTimeElement.textContent = "00:00";
         this.totalTimeElement.textContent = "00:00";
@@ -295,19 +320,22 @@ class MP3Player {
         fileInput.click();
     }
 
-    loadFile(file) {
+    async loadFile(file) {
+        if (this.playPromise) {
+            await this.playPromise;
+        }
         const fileURL = URL.createObjectURL(file);
         this.initializeAudio();
-        this.audioElement.src = fileURL;
-        this.fileLabel.textContent = `File: ${file.name}`;
+        this.audioElement = new Audio(fileURL);
         this.audioElement.load();
+        this.fileLabel.textContent = `File: ${file.name}`;
         console.log("File loaded:", file.name);
     }
 
     updateLibraryDisplay() {
         this.libraryContainer.innerHTML = '<h2>LIBRARY</h2><ul id="libraryList"></ul>';
         const libraryList = this.libraryContainer.querySelector("#libraryList");
-    
+
         if (this.playlist.length === 0) {
             const li = document.createElement("li");
             li.textContent = "No tracks found in the library.";
@@ -316,19 +344,18 @@ class MP3Player {
         } else {
             this.playlist.forEach((track, index) => {
                 const li = document.createElement("li");
-                li.textContent = track.name; // Use the extracted name
+                li.textContent = track.name;
                 li.style.cursor = "pointer";
-                li.addEventListener("click", () => {
-                    this.loadTrack(index);
-                    this.playTrack();
+                li.addEventListener("click", async () => {
+                    await this.loadTrack(index);
+                    await this.playTrack();
                 });
                 libraryList.appendChild(li);
             });
         }
-    
+
         console.log("Library display updated");
     }
-    
 
     formatTime(seconds) {
         try {

@@ -15,6 +15,7 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
+    "music-metadata": "^7.14.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
