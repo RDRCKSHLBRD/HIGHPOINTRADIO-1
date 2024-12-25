@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0CASSETTE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <div class="header-container">
+      <div class="title-container">
+        <h1 id="cassette" class="title">_CASSETTE</h1>
+      </div>
+      <div class="file-upload-wrapper">
+        <span id="fileLabel">FILE:</span>
+      </div>
+      <div class="time">
+        <span class="elapsed-time">00:00</span>
+        <span class="total-time">00:00</span>
+      </div>
+      <div class="player-controls">
+        <button id="playButton" class="icon-button">
+          <img src="assets/icons/CASS-PLAY-v2.svg" alt="Play" class="control-icon">
+        </button>
+        <button id="stopButton" class="icon-button">
+          <img src="assets/icons/CASS-STOP.svg" alt="Stop" class="control-icon">
+        </button>
+        <button id="pauseButton" class="icon-button">
+          <img src="assets/icons/CASS-PAUSE.svg" alt="Pause" class="control-icon">
+        </button>
+        <button id="prevButton" class="icon-button">
+          <img src="assets/icons/CASS-BACK_BLUE-5.svg" alt="Previous" class="control-icon">
+        </button>
+        <button id="nextButton" class="icon-button">
+          <img src="assets/icons/CASS-FWD_BLUE-5.svg" alt="Next" class="control-icon">
+        </button>
+        <button id="BKshuffleButton" class="icon-button">
+          <img src="assets/icons/CASS-bkwd30_BLUE.svg" alt="Shuffle" class="control-icon">
+        </button>
+        <button id="FWDshuffleButton" class="icon-button">
+          <img src="assets/icons/CASS-fwd30_BLUE.svg" alt="Shuffle" class="control-icon">
+        </button>
+        <button id="repeatButton" class="icon-button">
+          <img src="assets/icons/CASS-REPEAT_BLUE.svg" alt="Repeat" class="control-icon">
+        </button>
+        <button id="ejectButton" class="icon-button">
+          <img src="assets/icons/CASS-EJECT.svg" alt="Eject" class="control-icon"> 
+        </button>
+        <input type="range" id="seekBar" min="0" max="100" value="0">
+        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+        <div class="VolAmt"></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container1">
+     
+    </div>
+  </main>
+
+  <footer>
+    <div class="footerInfo">
+      © 2024 RDXENV | Roderick Shoolbraid. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

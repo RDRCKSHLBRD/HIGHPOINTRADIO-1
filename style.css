@@ -1,0 +1,333 @@
+/* Reset some default styles */
+body, h1, p {
+  font-weight: 400;
+  font-size: 1.1em;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #304c5c;
+  color: lightgray;
+  overflow-x: hidden;
+}
+
+header {
+  background: #304c5c;
+  color: #7fabcc;
+  padding: 2px;
+  text-align: center;
+}
+
+.header-container {
+  display: grid;
+  grid-template-areas:
+    "title"
+    "file"
+    "time"
+    "controls"
+    "playback";
+  gap: 5px;
+  padding: 5px;
+  background-color: #065a82;
+  border: 1px solid white;
+}
+
+.title-container {
+  grid-area: title;
+}
+
+.title {
+  text-align: left;
+  padding: 3px;
+  margin: 5px;
+  border-bottom: 1px solid  #083d5e;
+  ;
+  width: 40%;
+}
+
+.file-upload-wrapper {
+  grid-area: file;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  text-align: left;
+  border: 1px solid black;
+  margin-left: 5px;
+  padding: 2px 5px;
+  background-color: #c5d8d6;
+  color: #065a82;
+  font-size: .8em;
+  cursor: pointer;
+}
+
+.time {
+  grid-area: time;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #c5d8d6;
+  color: #555;
+  border: 1px solid black;
+  height: auto;
+  width: 100px;
+  font-size: .7em;
+  padding: 4px 5px;
+  box-sizing: border-box;
+}
+
+.elapsed-time {
+  color: #8fa338;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.total-time {
+  color: #083d5e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-controls {
+  grid-area: controls;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 0;
+}
+
+.playback-controls {
+  grid-area: playback;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* General reset for inputs */
+.fileInput, #volumeControl, #playButton, #stopButton {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 5px;
+  margin: 7px;
+  font-family: inherit;
+  font-size: .8em;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Hide the actual file input */
+.fileInput {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Label for file upload */
+.file-upload-label {
+  display: inline-block;
+  padding: 0px;
+  font-size: .9em;
+}
+
+/* Slider custom styling */
+#volumeControl, #seekBar {
+  appearance: none;
+  width: 100px;
+  border: 1px solid black;
+  background-color: #58a7af;
+}
+
+#seekBar {
+  width: 200px;
+  height: 30px;
+  margin: 0 10px;
+}
+
+
+#volumeControl {
+  width: 200px;
+}
+
+
+
+/* Custom styling for the slider thumb */
+#volumeControl::-webkit-slider-thumb, #seekBar::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #7fabcc;
+  cursor: pointer;
+  border: 1px solid #d9f3e5;
+  border-radius: 50%;
+}
+
+#volumeControl::-moz-range-thumb, #seekBar::-moz-range-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #7fabcc;
+  cursor: pointer;
+  border: 1px solid #d9f3e5;
+}
+
+#volumeControl::-ms-thumb, #seekBar::-ms-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #7fabcc;
+  cursor: pointer;
+  border: 1px solid #d9f3e5;
+}
+
+.VolAmt {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #c5d8d6;
+  border-radius: 5px;
+  width: 40px;
+  height: 25px;
+  font-size: .8em; 
+  color: #7fabcc;
+  background-color: #065a82;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  padding: 0;
+  margin: 0;
+}
+
+
+.control-icon {
+  background: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #7fabcc;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+  padding: 3px;
+}
+
+.control-icon:hover {
+  background-color: #304c5c;
+  transform: scale(1.1);
+}
+
+.icon-button:active .control-icon {
+  background-color: #304c5c;
+  transform: scale(0.95);
+}
+
+main {
+  padding: 2px;
+  margin: 5px;
+  background: #27597c;
+  justify-content: center;
+}
+
+.container1 {
+  border: 11px solid #58a7af;
+  border-radius: 3px;
+  margin: 5px 0;
+  width: 95%;
+  font-size: .7em;
+  color: #065a82;
+  padding: 10px;
+  background-color: #c5d8d6;
+  max-height: none; /* Remove max-height to allow container to grow */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#libraryList {
+  list-style-type: none;
+  padding: 0;
+}
+
+#libraryList li {
+  cursor: pointer;
+  padding: 5px;
+  margin: 2px 0;
+  background-color: #065a82;
+  color: #c5d8d6;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+  word-wrap: break-word; 
+}
+
+#libraryList li:hover {
+  background-color: #304c5c;
+  color:#c5d8d6 ;
+  
+}
+
+footer {
+  background: #304c5c;
+  border-top: 2px solid #065a82;
+  color: #c5d8d6;
+  text-align: right;
+  font-size: .7em;
+  padding: 10px 0;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+.footerInfo {
+  margin: 5px;
+  padding: 3px;
+}
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 767px) {
+  .container1 {
+    width: 90%; /* Slightly reduce width on mobile to prevent potential overflow */
+    padding-bottom: 70px;
+  }
+  
+  #libraryList li {
+    font-size: 1.1em; /* Increase font size for better readability on mobile */
+    padding: 10px 5px; /* Increase vertical padding for easier tapping */
+  }
+}
+
+@media (min-width: 768px) {
+  .header-container {
+    grid-template-areas:
+      "title title"
+      "file time"
+      "controls controls"
+      "playback playback";
+  }
+  
+  .container1 {
+    max-height: 500px; /* Set a max height for larger screens */
+    padding-bottom: 50px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-container {
+    grid-template-areas:
+      "title file time"
+      "controls controls playback";
+  }
+  
+  .container1 {
+    max-height: 600px; /* Increase max height for even larger screens */
+  }
+}
