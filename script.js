@@ -29,7 +29,8 @@ class MP3Player {
         this.isRepeating = false;
         this.currentTrackIndex = 0;
 
-        this.libraryPath = 'https://storage.googleapis.com/ip-cassette/cassette1/library/';
+        // this.libraryPath = 'https://storage.googleapis.com/radio-one/MIXTAPES/';
+
 
         this.playlist = [];
 
@@ -62,25 +63,24 @@ class MP3Player {
 
     async loadLibraryFiles() {
         try {
-            const response = await fetch('/api/library');
-            const files = await response.json();
-            this.playlist = files.map(file => ({ name: file, url: null }));
+            // Fetch the local JSON file
+            const response = await fetch('library.json');
+            if (!response.ok) throw new Error('Failed to load library.json');
             
-            for (let track of this.playlist) {
-                try {
-                    const response = await fetch(this.libraryPath + track.name);
-                    const blob = await response.blob();
-                    track.url = URL.createObjectURL(blob);
-                    console.log(`Loaded ${track.name}`);
-                } catch (error) {
-                    console.error(`Error loading ${track.name}:`, error);
-                }
-            }
+            // Parse the JSON to get the playlist
+            const files = await response.json();
+            this.playlist = files.map((url, index) => ({ 
+                name: `Track ${index + 1}`, 
+                url 
+            }));
+            
+            console.log('Playlist loaded:', this.playlist);
         } catch (error) {
-            console.error('Error fetching library:', error);
+            console.error('Error loading library:', error);
             this.loadingIndicator.textContent = 'Error loading library. Please try again.';
         }
     }
+    
 
     initializeAudio() {
         if (this.audioContext) return;
