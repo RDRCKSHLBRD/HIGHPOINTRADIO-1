@@ -6,41 +6,50 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// Rate limiter for Render
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100
-});
-
-app.use(limiter);
+// Middleware: General CORS setup
 app.use(cors());
+
+// Middleware: Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve index.html
+// Middleware: Dynamic rate limiting
+const dynamicRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: (req) => {
+        // Higher limits for trusted users (e.g., clients with a specific header)
+        return req.headers['x-trusted-client'] ? 1000 : 100;
+    },
+    handler: (req, res) => {
+        console.log(`Rate limit exceeded for IP: ${req.ip}`);
+        res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+});
+
+// Apply rate limiting middleware globally or per route
+app.use('/metadata', dynamicRateLimit);
+app.use('/proxy', dynamicRateLimit);
+
+// Route: Serve index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Metadata endpoint using Axios
+// Route: Metadata API
 app.get('/metadata', async (req, res) => {
     const fileUrl = req.query.url;
-    
+
     if (!fileUrl) {
         return res.status(400).json({ error: 'URL is required' });
     }
 
     try {
-        // Get headers only first
         const headResponse = await axios({
             method: 'head',
             url: fileUrl
         });
 
-        // Get content length and type
         const contentLength = headResponse.headers['content-length'];
         const contentType = headResponse.headers['content-type'];
-
-        // Calculate duration using 320 kbps
         const bitrate = 320 * 1024 / 8; // 320 kbps in bytes per second
         const durationEstimate = contentLength / bitrate;
 
@@ -49,15 +58,13 @@ app.get('/metadata', async (req, res) => {
             size: contentLength,
             type: contentType
         });
-
     } catch (error) {
         console.error('Error fetching metadata:', error.message);
         res.status(500).json({ error: 'Error fetching metadata' });
     }
 });
 
-
-// Proxy route for streaming
+// Route: Proxy API
 app.get('/proxy', async (req, res) => {
     const fileUrl = req.query.url;
 
@@ -66,7 +73,6 @@ app.get('/proxy', async (req, res) => {
     }
 
     try {
-        // Forward the range header if it exists
         const headers = {};
         if (req.headers.range) {
             headers.Range = req.headers.range; // Pass Range header for partial content
@@ -76,10 +82,9 @@ app.get('/proxy', async (req, res) => {
             method: 'get',
             url: fileUrl,
             responseType: 'stream',
-            headers: headers, // Include forwarded headers
+            headers: headers,
         });
 
-        // Set response headers
         if (req.headers.range) {
             res.status(206); // Partial Content
         }
@@ -93,7 +98,6 @@ app.get('/proxy', async (req, res) => {
             res.set('Content-Range', response.headers['content-range']);
         }
 
-        // Stream the response
         response.data.pipe(res);
     } catch (error) {
         console.error('Error in proxy:', error.message);
@@ -101,8 +105,7 @@ app.get('/proxy', async (req, res) => {
     }
 });
 
-
-
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
