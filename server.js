@@ -69,18 +69,21 @@ app.get('/proxy', async (req, res) => {
         // Forward the range header if it exists
         const headers = {};
         if (req.headers.range) {
-            headers.Range = req.headers.range;
+            headers.Range = req.headers.range; // Pass Range header for partial content
         }
 
         const response = await axios({
             method: 'get',
             url: fileUrl,
             responseType: 'stream',
-            headers: headers
+            headers: headers, // Include forwarded headers
         });
 
         // Set response headers
-        res.set('Content-Type', 'audio/mpeg');
+        if (req.headers.range) {
+            res.status(206); // Partial Content
+        }
+        res.set('Content-Type', response.headers['content-type']);
         res.set('Accept-Ranges', 'bytes');
 
         if (response.headers['content-length']) {
@@ -97,6 +100,8 @@ app.get('/proxy', async (req, res) => {
         res.status(500).json({ error: 'Error fetching file' });
     }
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
