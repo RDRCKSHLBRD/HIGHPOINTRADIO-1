@@ -40,19 +40,9 @@ app.get('/metadata', async (req, res) => {
         const contentLength = headResponse.headers['content-length'];
         const contentType = headResponse.headers['content-type'];
 
-        // Get just the first part of the file for metadata
-        const response = await axios({
-            method: 'get',
-            url: fileUrl,
-            headers: {
-                'Range': 'bytes=0-32768' // First 32KB should contain headers
-            },
-            responseType: 'arraybuffer'
-        });
-
-        // Calculate rough duration estimate from content length
-        // Assuming 128kbps MP3
-        const durationEstimate = (contentLength / (128 * 1024 / 8));
+        // Calculate duration using 320 kbps
+        const bitrate = 320 * 1024 / 8; // 320 kbps in bytes per second
+        const durationEstimate = contentLength / bitrate;
 
         res.json({
             duration: durationEstimate,
@@ -65,6 +55,7 @@ app.get('/metadata', async (req, res) => {
         res.status(500).json({ error: 'Error fetching metadata' });
     }
 });
+
 
 // Proxy route for streaming
 app.get('/proxy', async (req, res) => {
