@@ -12,8 +12,7 @@ class MP3Player {
         this.ejectButton = document.getElementById("ejectButton");
         this.seekBar = document.getElementById("seekBar");
         this.volumeControl = document.getElementById("volumeControl");
-        this.fileLabel = document.getElementById("fileLabel");
-        this.fileUploadWrapper = document.querySelector(".file-upload-wrapper");
+        this.fileDisplayWrapper = document.querySelector(".file-upload-wrapper");
         this.elapsedTimeElement = document.querySelector(".elapsed-time");
         this.totalTimeElement = document.querySelector(".total-time");
         this.volAmtElement = document.querySelector(".VolAmt");
@@ -57,10 +56,8 @@ class MP3Player {
         this.BKshuffleButton.addEventListener("click", () => this.skip(-30));
         this.FWDshuffleButton.addEventListener("click", () => this.skip(30));
         this.repeatButton.addEventListener("click", () => this.toggleRepeat());
-        this.ejectButton.addEventListener("click", () => this.ejectTrack());
         this.volumeControl.addEventListener("input", (e) => this.changeVolume(e.target.value));
         this.seekBar.addEventListener("input", (e) => this.seek(e.target.value));
-        this.fileUploadWrapper.addEventListener("click", () => this.openFileDialog());
     }
 
     async loadLibraryFiles() {
@@ -167,8 +164,10 @@ class MP3Player {
                 }
 
                 this.audioElement.load();
-                this.fileLabel.textContent = `File: ${track.name}`;
-                this.currentTrackIndex = index;
+
+                // Update file display with track name
+                this.fileDisplayWrapper.textContent = `Now Playing: ${track.name}`;
+
                 console.log("Track loaded:", track.name);
             }
         }
@@ -295,41 +294,6 @@ class MP3Player {
             this.audioElement.currentTime = Math.min(value, this.audioElement.duration || 0);
         }
         console.log("Seek to:", value);
-    }
-
-    async ejectTrack() {
-        await this.stopTrack();
-        this.fileLabel.textContent = "Click to select a file";
-        this.elapsedTimeElement.textContent = "00:00";
-        this.totalTimeElement.textContent = "00:00";
-        this.volAmtElement.textContent = "";
-        this.seekBar.value = 0;
-        console.log("Track ejected");
-    }
-
-    openFileDialog() {
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "audio/*";
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.loadFile(file);
-            }
-        };
-        fileInput.click();
-    }
-
-    async loadFile(file) {
-        if (this.playPromise) {
-            await this.playPromise;
-        }
-        const fileURL = URL.createObjectURL(file);
-        this.initializeAudio();
-        this.audioElement = new Audio(fileURL);
-        this.audioElement.load();
-        this.fileLabel.textContent = `File: ${file.name}`;
-        console.log("File loaded:", file.name);
     }
 
     updateLibraryDisplay() {
